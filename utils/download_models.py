@@ -22,7 +22,7 @@ def unzip_model_files(model_name,save_dir):
 def download_argparser():
     parser = argparse.ArgumentParser(description='Download Models from DropBox')
     parser.add_argument('--save_dir', dest='save_dir', help='downloaded files will be stored here', type=str)
-    parser.add_argument('--csv_file_path', dest='csv_file_path', default='./nx-benchmarks.csv', help='csv contains url to download model', type=str)
+    parser.add_argument('--csv_file_path', dest='csv_file_path', default='./orin-benchmarks.csv', help='csv contains url to download model', type=str)
     downloader_group = parser.add_mutually_exclusive_group()
     downloader_group.add_argument('--all', dest='all', help='all models from DropBox will be downloaded', action='store_true')
     downloader_group.add_argument('--model_name', dest='model_name', help='only specified models will be downloaded', type=str)

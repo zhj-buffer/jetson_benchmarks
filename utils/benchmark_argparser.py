@@ -9,28 +9,34 @@ class benchmark_argparser():
         benchmark_group.add_argument('--model_name', dest='model_name', help='only specified models will be executed', type=str)
         benchmark_group.add_argument('--all', dest='all', help='all models from DropBox will be downloaded',
                                       action='store_true')
-        self.parser.add_argument('--jetson_devkit', dest='jetson_devkit', default='xavier-nx', help='Input Jetson Devkit name', type=str)
+        self.parser.add_argument('--jetson_devkit', dest='jetson_devkit', default='orin', help='Input Jetson Devkit name', type=str)
+        # For Jetson Orin: set to 'orin'
         # For Jetson Xavier: set to 'xavier'
         # For Jetson TX2: set to 'tx2'
         # For Jetson Nano: set to 'nano'
         self.parser.add_argument('--power_mode', dest='power_mode', help='Jetson Power Mode', default=0, type=int)
+        # For Jetson Orin: set to 0 (MAXN)
         # For Jetson Xavier: set to 0 (MAXN)
         # For Jetson TX2: set to 3 (MAXP)
         # For Jetson Nano: set to 0 (MAXN)
         self.parser.add_argument('--precision', dest='precision', default='int8',
                                  help='precision for model int8 or fp16', type=str)
+        # For Jetson Orin: set to int8
         # For Jetson Xavier: set to int8
         # For Jetson TX2: set to 3 fp16
         # For Jetson Nano: set to fp16
         self.parser.add_argument('--jetson_clocks', dest='jetson_clocks', help='Set Clock Frequency to Max (jetson_clocks)',
                                       action='store_true')
-        self.parser.add_argument('--gpu_freq', dest='gpu_freq', default=1109250000,help='set GPU frequency', type=int)
+        self.parser.add_argument('--gpu_freq', dest='gpu_freq', default=1300500000,help='set GPU frequency', type=int)
         # Default values are for Xavier-NX
+        # For Orin set gpu_freq to 1300500000: Find using $sudo cat /sys/devices/17000000.ga10b/devfreq/17000000.ga10b/max_freq
         # For Xavier set gpu_freq to 1377000000: Find using  $sudo cat /sys/devices/17000000.gv11b/devfreq/17000000.gv11b/available_frequencies
         # For TX2 set gpu freq to 1300500000: Find using $sudo cat /sys/devices/gpu.0/devfreq/17000000.gp10b/available_frequencies
         # For Nano set gpu freq to 921600000: Find using $sudo cat /sys/devices/gpu.0/devfreq/57000000.gpu/available_frequencies
-        self.parser.add_argument('--dla_freq', dest='dla_freq', default=1100800000, help='set DLA frequency', type=int)
+        self.parser.add_argument('--dla_freq', dest='dla_freq', default=1536000000, help='set DLA frequency', type=int)
         # Default values are for Xavier-NX
+        # For Orin set dla_freq to 1536000000 : Find using $sudo cat /sys/devices/platform/13e40000.host1x/158c0000.nvdla1/acm/clk_cap/dla0_core
+        # For Orin set dla_falcon to 832000000 : Find using $sudo cat /sys/devices/platform/13e40000.host1x/15880000.nvdla0/acm/clk_cap/dla0_falcon
         # For Xavier set dla_freq to 1395200000 : Find using $sudo cat /sys/kernel/debug/bpmp/debug/clk/nafll_dla/max_rate
         self.parser.add_argument('--plot', dest='plot', help='Perf in Graph', action='store_true')
     def make_args(self):

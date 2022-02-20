@@ -24,8 +24,12 @@ class utilities():
         print("Jetson clocks are Set")
 
     def set_jetson_fan(self, switch_opt):
-        fan_cmd = "sh" + " " + "-c" + " " + "'echo" + " " + str(
-            switch_opt) + " " + ">" + " " + "/sys/devices/pwm-fan/target_pwm'"
+        if self.jetson_devkit == 'orin' or self.jetson_devkit == 'orin-nx':
+            fan_cmd = "sh" + " " + "-c" + " " + "'echo" + " " + str(
+                switch_opt) + " " + ">" + " " + "/sys/devices/platform/pwm-fan/hwmon/hwmon3/pwm1'"
+        else:
+            fan_cmd = "sh" + " " + "-c" + " " + "'echo" + " " + str(
+                switch_opt) + " " + ">" + " " + "/sys/devices/pwm-fan/target_pwm'"
         subprocess.call('sudo {}'.format(fan_cmd), shell=True, stdout=FNULL)
 
     def run_set_clocks_withDVFS(self):
@@ -40,11 +44,20 @@ class utilities():
             self.set_clocks_withDVFS(frequency=self.gpu_freq, device='gpu')
             self.set_user_clock(device='dla')
             self.set_clocks_withDVFS(frequency=self.dla_freq, device='dla')
+        if self.jetson_devkit == 'orin' or self.jetson_devkit == 'orin-nx':
+            self.set_user_clock(device='gpu')
+            self.set_clocks_withDVFS(frequency=self.gpu_freq, device='gpu')
+            self.set_user_clock(device='dla0')
+            self.set_clocks_withDVFS(frequency=self.dla_freq, device='dla')
+            self.set_user_clock(device='dla1')
+            self.set_clocks_withDVFS(frequency=self.dla_freq, device='dla')
+
 
     def set_user_clock(self, device):
+        print(self.jetson_devkit)
         if self.jetson_devkit == 'tx2':
             self.enable_register = "/sys/devices/gpu.0/aelpg_enable"
-            self.freq_register = "/sys/devices/gpu.0/devfreq/17000000.gp10b"
+            self.freq_register = "/sys/devices/gpu.0/devfreq/17000000.ga10b/cur_freq"
         if self.jetson_devkit == 'nano':
             self.enable_register = "/sys/devices/gpu.0/aelpg_enable"
             self.freq_register = "/sys/devices/gpu.0/devfreq/57000000.gpu"
@@ -56,6 +69,19 @@ class utilities():
                 base_register_dir = "/sys/kernel/debug/bpmp/debug/clk"
                 self.enable_register = base_register_dir + "/nafll_dla/mrq_rate_locked"
                 self.freq_register = base_register_dir + "/nafll_dla/rate"
+        if self.jetson_devkit == 'orin' or self.jetson_devkit == 'orin-nx':
+            if device == 'gpu':
+                self.enable_register = "/sys/devices/gpu.0/aelpg_enable"
+                self.freq_register = "/sys/devices/gpu.0/devfreq/17000000.ga10b"
+            elif device == 'dla0':
+                base_register_dir = "/sys/kernel/debug/bpmp/debug/clk"
+                self.enable_register = base_register_dir + "/nafll_dla0_core/mrq_rate_locked"
+                self.freq_register = base_register_dir + "/nafll_dla0_core/rate"
+            elif device == 'dla1':
+                base_register_dir = "/sys/kernel/debug/bpmp/debug/clk"
+                self.enable_register = base_register_dir + "/nafll_dla1_core/mrq_rate_locked"
+                self.freq_register = base_register_dir + "/nafll_dla1_core/rate"
+
 
     def set_clocks_withDVFS(self, frequency, device):
         from_freq = self.read_internal_register(register=self.freq_register, device=device)
