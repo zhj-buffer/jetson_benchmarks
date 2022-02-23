@@ -7,7 +7,13 @@ import gc
 import warnings
 warnings.simplefilter("ignore")
 
+from utils import logger
+
+
 def main():
+    log = logger('all.log',level='debug')
+    logger('error.log', level='error').logger.error('error')
+
     # Set Parameters
     arg_parser = benchmark_argparser()
     args = arg_parser.make_args()
@@ -16,8 +22,8 @@ def main():
     precision = args.precision
 
     # System Check
-    system_check = utilities(jetson_devkit=args.jetson_devkit, gpu_freq=args.gpu_freq, dla_freq=args.dla_freq)
-    system_check.close_all_apps()
+    system_check = utilities(jetson_devkit=args.jetson_devkit, gpu_freq=args.gpu_freq, dla_freq=args.dla_freq, log=log)
+    #system_check.close_all_apps()
     if system_check.check_trt():
         sys.exit()
     system_check.set_power_mode(args.power_mode, args.jetson_devkit)
@@ -26,16 +32,17 @@ def main():
         system_check.set_jetson_clocks()
     else:
         system_check.run_set_clocks_withDVFS()
-        system_check.set_jetson_fan(255)
-
+        system_check.set_jetson_fan(60)
+    #log_file = 
+    #f = open('')
     # Read CSV and Write Data
-    benchmark_data = read_write_data(csv_file_path=csv_file_path, model_path=model_path)
+    benchmark_data = read_write_data(csv_file_path=csv_file_path, model_path=model_path, log=log)
     if args.all:
         latency_each_model =[]
-        print("Running all benchmarks.. This will take at least 2 hours...")
+        log.logger.info("Running all benchmarks.. This will take at least 2 hours...")
         for read_index in range (0,len(benchmark_data)):
             gc.collect()
-            model = run_benchmark_models(csv_file_path=csv_file_path, model_path=model_path, precision=precision, benchmark_data=benchmark_data)
+            model = run_benchmark_models(csv_file_path=csv_file_path, model_path=model_path, precision=precision, benchmark_data=benchmark_data, log=log)
             download_err = model.execute(read_index=read_index)
             if not download_err:
                 # Reading Results
@@ -48,7 +55,7 @@ def main():
             system_check.clear_ram_space()
         benchmark_table = pd.DataFrame(latency_each_model, columns=['GPU (ms)', 'DLA0 (ms)', 'DLA1 (ms)', 'FPS', 'Model Name'], dtype=float)
         # Note: GPU, DLA latencies are measured in miliseconds, FPS = Frames per Second
-        print(benchmark_table[['Model Name', 'FPS']])
+        log.logger.info(benchmark_table[['Model Name', 'FPS']])
         if args.plot:
             benchmark_data.plot_perf(latency_each_model)
 

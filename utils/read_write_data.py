@@ -3,11 +3,13 @@ import re
 import os
 import datetime
 from datetime import timedelta
+from utils import logger
 # Class for read csv and write to csv or panda or graph generate
 class read_write_data():
-    def __init__(self, csv_file_path, model_path):
+    def __init__(self, csv_file_path, model_path, log):
         self.csv_file_path =csv_file_path
         self.model_path = model_path
+        self.log =log
         self.start_valid_time = 0
         self.end_valid_time = 0
     def benchmark_csv(self, read_index):
@@ -120,12 +122,12 @@ class read_write_data():
                 elif e_id ==1 or e_id == 2:
                     FPS += batch_size_dla * (1000 / latency_device[e_id])
             else:
-                print('Error in Build, Please check the log in: {}'.format(self.model_path))
+                self.log.logger.info('Error in Build, Please check the log in: {}'.format(self.model_path))
                 error_read = 1
                 continue
         if any(latency is 0 for latency in latency_device[0:self.num_devices]):
             latency_device[len(latency_device) - 2] = 0
-            print("We recommend to run benchmarking in headless mode")
+            self.log.logger.info("We recommend to run benchmarking in headless mode")
         else:
             latency_device[len(latency_device)-2] = FPS
         return latency_device, error_read
@@ -146,4 +148,4 @@ class read_write_data():
         plt.title('Benchmark Analysis on Jetson')
         plt.grid()
         plt.savefig(str(os.path.join(self.model_path, str('perf_results.png'))))
-        print('Please find benchmark results in {}'.format(self.model_path)) 
+        self.log.logger.info('Please find benchmark results in {}'.format(self.model_path)) 

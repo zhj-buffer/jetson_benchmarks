@@ -3,10 +3,11 @@ import os
 import subprocess
 import threading
 import time
+from utils import logger
 
 # Class for load, store, remove engine
 class load_store_engine():
-    def __init__(self, model_path, model_name, batch_size_gpu, batch_size_dla, num_devices, precision, ws_gpu, ws_dla, model_input, model_output ):
+    def __init__(self, model_path, model_name, batch_size_gpu, batch_size_dla, num_devices, precision, ws_gpu, ws_dla, model_input, model_output, log ):
         self.model_path = model_path # Directory
         self.model_name = model_name # Model Name
         self.num_devices = num_devices # 3 if GPU+2DLA, 1 if GPU Only
@@ -18,6 +19,7 @@ class load_store_engine():
         self. model_input = model_input # Input name of the model
         self.model_output = model_output # Output name of the model
         self.trt_process = []
+        self.log = log
 
     def engine_gen(self):
         cmd = []
@@ -35,6 +37,7 @@ class load_store_engine():
                 engine_CMD = str(
                     './trtexec' + " " + model_base_path + " " + precision_cmd + " " +'--allowGPUFallback' + " " + " " + dla_cmd + " " +
                     workspace_cmd)
+                self.log.logger.info("engine_cmd: {}".format(engine_CMD))
             else:
                 self.device = 'gpu'
                 model_base_path = self._model2deploy()
@@ -60,7 +63,7 @@ class load_store_engine():
         for e_id in range(0, len(model_files)):
             model_file = os.path.join(self.model_path, model_files[e_id])
             if not os.path.isfile(model_file):
-                print('Could Not find model file {} in {}\nPlease Download all model files'.format(model_files[e_id], self.model_path))
+                self.log.logger.info('Could Not find model file {} in {}\nPlease Download all model files'.format(model_files[e_id], self.model_path))
                 return True
         return False
 
