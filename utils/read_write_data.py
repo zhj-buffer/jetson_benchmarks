@@ -85,9 +85,9 @@ class read_write_data():
                 elif "Average on" in line:
                     matches = re.search(r"Average\s+on\s+(\d+)\s+runs.*?"
                                         r"GPU\s+latency:\s+(\d+\.\d+)\s+.*?"
-                                        r"end\s+to\s+end\s+(\d+\.\d+)\s+ms", line)
+                                        , line)
                     if matches:
-                        add_time += float(matches.group(1)) * float(matches.group(3)) / 1000
+                        add_time += float(matches.group(1)) * float(matches.group(2)) / 1000
                         time_thread = start_time + timedelta(seconds=add_time)
                         time_stamps.append(time_thread)
                         latencies.append(float(matches.group(2)))
